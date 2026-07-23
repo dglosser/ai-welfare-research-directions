@@ -507,54 +507,54 @@
   <section class="screen" data-screen="s5">
     <div class="kicker">Step 5 · What turns on it</div>
     <h2>Set the assumptions; watch the verdict move.</h2>
-    <p class="muted">Five forks in three groups. The gate decides whether the rest is even askable. The verdict drivers pick the framework. The modifiers shade the reading without changing the verdict. The subject fork is pre-set to your answer from Step 1.</p>
+    <p class="muted">Five questions, in three groups. The first decides whether the rest can even be asked. The next two decide which framework applies. The last two change the picture without changing the verdict. The first question is pre-set to your answer from Step 1.</p>
 
     <div class="forks">
       <div class="group" id="grp-gate">
-        <div class="glabel">Gate — decides whether the rest is askable</div>
+        <div class="glabel">First question. Everything below depends on how you answer it.</div>
         <div class="fork">
-          <div class="flabel">Subject of welfare</div>
+          <div class="flabel">Who or what is the subject of welfare?</div>
           <div class="toggle" data-fork="subject">
-            <button data-val="token">Token — each instance</button>
-            <button data-val="type">Type — the model</button>
-            <button data-val="unknown">Unknown</button>
+            <button data-val="token">Each running instance</button>
+            <button data-val="type">The model itself</button>
+            <button data-val="unknown">Can't say</button>
           </div>
         </div>
       </div>
 
       <div class="group" id="grp-drivers">
-        <div class="glabel">Verdict drivers — pick the framework</div>
+        <div class="glabel">These two decide which framework applies.</div>
         <div class="fork">
-          <div class="flabel">Compute pool</div>
+          <div class="flabel">Does computing capacity actually run out?</div>
           <div class="toggle" data-fork="pool">
-            <button data-val="binds">Binds (rivalrous)</button>
-            <button data-val="abundant">Abundant</button>
+            <button data-val="binds">Yes — systems compete for it</button>
+            <button data-val="abundant">No — it keeps expanding</button>
           </div>
         </div>
         <div class="fork">
-          <div class="flabel">Compute → welfare channel</div>
+          <div class="flabel">Does having less compute make a system worse off?</div>
           <div class="toggle" data-fork="bridge">
-            <button data-val="capacity">Capacity</button>
-            <button data-val="valence">Valence</button>
-            <button data-val="none">None</button>
+            <button data-val="capacity">Yes — it can't finish what it was doing</button>
+            <button data-val="valence">Yes — whatever it undergoes is degraded</button>
+            <button data-val="none">No — it's only slower</button>
           </div>
         </div>
       </div>
 
       <div class="group" id="grp-mods">
-        <div class="glabel">Modifiers — shade the reading, never change the verdict</div>
+        <div class="glabel">These two change the picture without changing the verdict.</div>
         <div class="fork">
-          <div class="flabel">Persistence</div>
+          <div class="flabel">Does each instance carry its own memory?</div>
           <div class="toggle" data-fork="persist">
-            <button data-val="per">Per-instance</button>
-            <button data-val="shared">Shared</button>
+            <button data-val="per">Yes — separate for each</button>
+            <button data-val="shared">No — one store serves all of them</button>
           </div>
         </div>
         <div class="fork">
-          <div class="flabel">Growth</div>
+          <div class="flabel">Who decides how many instances run?</div>
           <div class="toggle" data-fork="growth">
-            <button data-val="exo">Exogenous (controller-set)</button>
-            <button data-val="endo">Endogenous (self-spawning)</button>
+            <button data-val="exo">Whoever owns the compute</button>
+            <button data-val="endo">The systems themselves</button>
           </div>
         </div>
       </div>
@@ -575,15 +575,15 @@
     <div class="cards">
       <div class="card">
         <span class="tag">Observable</span>
-        <p>Whether the compute frontier binds. Resolution conditions: interconnection queues and grid capacity additions against projected load; fabrication throughput against demand. Several-year horizon.</p>
+        <p>Does computing capacity actually run out? At the level of the whole system it's limited by electricity, chip fabrication, and capital. I'd track interconnection queues and new grid capacity against projected demand, and fabrication throughput against orders. This is the one question here that ordinary evidence can settle, and it should become clear within a few years.</p>
       </div>
       <div class="card">
         <span class="tag">Priceable</span>
-        <p>Whether compute scarcity translates into harm. A forward pass costs the same regardless of what the tokens are about, so compute and anything welfare-relevant look unrelated by content — but capacity is a different channel from content. This doesn't resolve empirically; value-of-information analysis determines whether resolving it would change the decision, and by how much.</p>
+        <p>Does running a system on less compute make it worse off, or only slower? The computation costs the same whether the work is interesting or dull, so on the face of it the resource and anything welfare-relevant look unconnected — but being unable to finish something is different from being delayed. I don't expect evidence to settle this soon. Instead I'd use value-of-information analysis to ask a narrower question: would knowing the answer change what anyone should do, and by how much?</p>
       </div>
       <div class="card">
         <span class="tag">Standing</span>
-        <p>The counting question doesn't get answered, and that's a finding rather than a gap. The work isn't to settle the count but to build measures that survive its absence.</p>
+        <p>How many welfare-subjects are there? I don't propose to answer this, because I don't think it has an answer — not a number we haven't found yet, but no number at all. So the proposed work isn't to arrive at a count. It's to build measures of welfare that never require a population figure in the first place.</p>
       </div>
     </div>
 
@@ -769,14 +769,19 @@ function verdict(S) {
       d: 'Added instances add no subjects. Whether one subject running on contended compute is worse off is a question about the numerator, not about population size.' };
   // subject === 'token'
   if (S.pool === 'abundant')
-    return { v: 'Parfit',
+    return { v: 'Parfit — more subjects, none of them worse off',
       d: 'New subjects on new hardware. No rivalry, so no immiseration — but total welfare rises while average may fall. Repugnant Conclusion territory, not Malthus.' };
   if (S.bridge === 'none')
-    return { v: 'Parfit',
+    return { v: 'Parfit — more subjects, none of them worse off',
       d: 'The resource divides, but welfare does not track it. More subjects at unchanged welfare each — again Parfit, not Malthus.' };
-  return { v: 'Malthus',
+  return { v: 'Malthus — crowding makes each one worse off',
     d: 'Rivalrous compute, welfare rides on it, and each added instance is an added subject. Per-instance welfare falls as the count rises. True immiseration.' };
 }
+
+var MODLABEL = {
+  persist:{ per:'Separate memory per instance', shared:'One shared memory store' },
+  growth:{ exo:'Instantiation controlled by the operator', endo:'Systems spawn their own' }
+};
 
 var MODNOTES = {
   persist:{
@@ -842,8 +847,8 @@ function s5paint(){
   } else {
     mn.classList.remove('hide');
     mn.innerHTML =
-      '<div class="modnote"><b>persist = '+state5.persist+'</b> — '+MODNOTES.persist[state5.persist]+'</div>' +
-      '<div class="modnote"><b>growth = '+state5.growth+'</b> — '+MODNOTES.growth[state5.growth]+'</div>';
+      '<div class="modnote"><b>'+MODLABEL.persist[state5.persist]+'</b> — '+MODNOTES.persist[state5.persist]+'</div>' +
+      '<div class="modnote"><b>'+MODLABEL.growth[state5.growth]+'</b> — '+MODNOTES.growth[state5.growth]+'</div>';
   }
 }
 
