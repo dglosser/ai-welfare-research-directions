@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>An argument about measuring AI welfare</title>
+<style>
+  :root{
+    --bg:#fbfbf9;
+    --panel:#ffffff;
+    --ink:#1b1c1e;
+    --muted:#63666b;
+    --faint:#8b8e93;
+    --line:#e4e2dc;
+    --line-strong:#d3d0c8;
+    --accent:#2f5d7a;
+    --accent-soft:#eaf1f5;
+    --accent-line:#bcd3df;
+    --max:820px;
+    --radius:10px;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Noto Sans",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:17px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-line)}
+  a:hover{border-bottom-color:var(--accent)}
+  p{margin:0 0 1.05em}
+  h1,h2,h3{line-height:1.25;font-weight:640;letter-spacing:-0.01em}
+  h1{font-size:1.85rem;margin:0 0 .55em}
+  h2{font-size:1.32rem;margin:0 0 .2em}
+  h3{font-size:1.02rem;margin:0 0 .4em}
+  .em{color:var(--accent)}
+  .lead{font-size:1.08rem;color:var(--muted)}
+  .small{font-size:.9rem}
+  .muted{color:var(--muted)}
+  .faint{color:var(--faint)}
+
+  /* ---------- top bar / stepper ---------- */
+  header{
+    position:sticky;top:0;z-index:20;
+    background:rgba(251,251,249,.94);
+    backdrop-filter:saturate(1.1) blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .bar{
+    width:100%;max-width:1180px;margin:0 auto;padding:10px 22px;
+    display:flex;align-items:center;gap:18px;
+  }
+  .brand{
+    font-size:.82rem;letter-spacing:.02em;color:var(--muted);
+    cursor:pointer;white-space:nowrap;border:0;
+  }
+  .brand b{color:var(--ink);font-weight:620}
+  .steps{
+    display:flex;gap:4px;overflow-x:auto;margin-left:auto;min-width:0;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  }
+  .steps::-webkit-scrollbar{display:none}
+  .step{
+    appearance:none;background:none;border:0;cursor:pointer;
+    font-family:inherit;font-size:.82rem;color:var(--faint);
+    padding:5px 9px;border-radius:7px;white-space:nowrap;
+    display:flex;align-items:center;gap:7px;transition:color .15s,background .15s;
+  }
+  .step:hover{color:var(--ink);background:#f0efea}
+  .step .n{
+    font-variant-numeric:tabular-nums;font-size:.72rem;
+    width:19px;height:19px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;
+    border:1px solid var(--line-strong);color:var(--faint);
+    transition:all .15s;
+  }
+  .step.active{color:var(--ink);font-weight:560}
+  .step.active .n{background:var(--accent);border-color:var(--accent);color:#fff}
+
+  /* ---------- screens ---------- */
+  main{max-width:var(--max);margin:0 auto;padding:38px 22px 40px}
+  .screen{display:none;animation:fade .2s ease}
+  .screen.show{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.screen{animation:none}}
+  .kicker{
+    font-size:.74rem;text-transform:uppercase;letter-spacing:.13em;
+    color:var(--accent);font-weight:640;margin-bottom:10px;
+  }
+  .rule{height:1px;background:var(--line);border:0;margin:26px 0}
+
+  /* ---------- nav buttons ---------- */
+  .nav{
+    max-width:var(--max);margin:0 auto;padding:0 22px 46px;
+    display:flex;justify-content:space-between;gap:12px;
+  }
+  .btn{
+    appearance:none;font-family:inherit;font-size:.95rem;cursor:pointer;
+    padding:10px 18px;border-radius:8px;border:1px solid var(--line-strong);
+    background:var(--panel);color:var(--ink);transition:all .15s;
+  }
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn[disabled]{opacity:.35;cursor:default;pointer-events:none}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{filter:brightness(1.06);color:#fff}
+
+  /* ---------- entry ---------- */
+  .entry{padding-top:40px}
+  .entry h1{font-size:2.05rem;max-width:16ch}
+  @media(min-width:640px){.entry h1{max-width:none}}
+  .entry .meta{margin-top:30px;font-size:.92rem;color:var(--muted)}
+  .entry .meta .who{color:var(--ink);font-weight:560}
+  .badge{
+    display:inline-block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--accent);border:1px solid var(--accent-line);background:var(--accent-soft);
+    padding:3px 10px;border-radius:20px;margin-bottom:20px;font-weight:600;
+  }
+
+  /* ---------- panels (screen 1) ---------- */
+  .panels{
+    display:grid;grid-template-columns:1fr;gap:14px;margin:20px 0 8px;
+  }
+  @media(min-width:720px){.panels{grid-template-columns:repeat(3,1fr)}}
+  .panel{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .panel .phead{
+    padding:11px 13px;border-bottom:1px solid var(--line);
+    display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+  }
+  .panel .ptitle{font-size:.82rem;font-weight:600;line-height:1.3}
+  .panel .turns{
+    font-family:var(--mono);font-size:.68rem;color:var(--faint);
+    white-space:nowrap;border:1px solid var(--line);border-radius:5px;padding:2px 6px;
+  }
+  .thread{padding:11px 13px;display:flex;flex-direction:column;gap:9px;
+    max-height:230px;overflow-y:auto;scrollbar-width:thin}
+  .ellip{font-size:.72rem;color:var(--faint);text-align:center;font-family:var(--mono)}
+  .msg{font-size:.79rem;line-height:1.45;padding:7px 9px;border-radius:8px}
+  .msg.u{background:#f3f2ee;color:var(--ink);align-self:flex-end;max-width:92%;border-bottom-right-radius:3px}
+  .msg.a{background:var(--accent-soft);color:#20303a;align-self:flex-start;max-width:92%;border-bottom-left-radius:3px}
+  .msg .role{display:block;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--faint);margin-bottom:2px}
+
+  /* ---------- choice buttons ---------- */
+  .q{font-size:1.12rem;font-weight:600;margin:22px 0 12px}
+  .choices{display:flex;flex-wrap:wrap;gap:10px}
+  .choice{
+    appearance:none;font-family:inherit;font-size:.95rem;cursor:pointer;
+    padding:9px 20px;border-radius:8px;border:1px solid var(--line-strong);
+    background:var(--panel);color:var(--ink);transition:all .15s;
+  }
+  .choice:hover{border-color:var(--accent)}
+  .choice.sel{background:var(--accent);border-color:var(--accent);color:#fff}
+  .reveal{
+    overflow:hidden;max-height:0;opacity:0;
+    transition:max-height .45s ease,opacity .4s ease,margin .4s ease,padding .4s ease;
+  }
+  .reveal.open{max-height:1400px;opacity:1}
+  .callout{
+    background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:8px;padding:14px 16px;margin:16px 0;
+  }
+  .callout .lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;
+    color:var(--accent);font-weight:640;margin-bottom:5px}
+
+  /* ---------- branch diagram ---------- */
+  .figwrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px;margin:16px 0}
+  .figcap{font-size:.8rem;color:var(--muted);margin-top:10px}
+  .illus{font-size:.8rem;color:var(--accent);font-weight:600;margin-top:9px;letter-spacing:.01em}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  .node{fill:var(--accent-soft);stroke:var(--accent-line)}
+  .nodetext{font-size:11px;fill:#20303a;font-family:var(--sans)}
+  .weightnode{fill:var(--accent);stroke:var(--accent)}
+  .weightnode-t{font-size:11px;fill:#fff;font-family:var(--sans);font-weight:600}
+  .edge{stroke:var(--line-strong);stroke-width:1.5;fill:none}
+
+  /* ---------- fraction (screen 2) ---------- */
+  .fracbox{display:flex;flex-wrap:wrap;align-items:center;gap:26px;
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px 24px;margin:18px 0}
+  .frac{display:inline-flex;flex-direction:column;align-items:center;font-family:var(--mono)}
+  .frac .num{font-size:1rem;padding:0 12px 6px}
+  .frac .den{font-size:1.5rem;font-weight:600;padding:6px 12px 0;color:var(--accent);
+    font-variant-numeric:tabular-nums;transition:color .2s}
+  .frac .barline{height:2px;background:var(--ink);width:100%;min-width:150px}
+  .eq{font-family:var(--mono);font-size:1.15rem;color:var(--muted)}
+  .persys{display:flex;flex-direction:column;gap:8px;min-width:150px}
+  .persys .val{font-family:var(--mono);font-size:1.15rem;font-weight:600}
+  .barchart{display:flex;align-items:flex-end;gap:14px;height:120px;
+    border-bottom:1px solid var(--line-strong);padding-bottom:0}
+  .chartbar{width:46px;background:var(--accent);border-radius:4px 4px 0 0;transition:height .4s ease}
+  .chartbar.ghost{background:var(--accent-line)}
+  .barlab{font-size:.7rem;color:var(--muted);text-align:center;margin-top:5px;font-family:var(--mono)}
+  .flip{display:inline-flex;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden}
+  .flip button{appearance:none;font-family:inherit;font-size:.9rem;cursor:pointer;
+    border:0;background:var(--panel);color:var(--muted);padding:8px 18px;transition:all .15s}
+  .flip button.on{background:var(--accent);color:#fff}
+
+  /* ---------- toggle chip row ---------- */
+  .toggle{display:inline-flex;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+  .toggle button{appearance:none;font-family:inherit;font-size:.86rem;cursor:pointer;
+    border:0;border-right:1px solid var(--line);background:var(--panel);color:var(--muted);
+    padding:8px 15px;transition:all .12s}
+  .toggle button:last-child{border-right:0}
+  .toggle button.on{background:var(--accent);color:#fff}
+
+  /* ---------- sliders ---------- */
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;
+    background:var(--line-strong);border-radius:3px;outline:none;margin:14px 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+    width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;
+    border:3px solid #fff;box-shadow:0 0 0 1px var(--accent-line)}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
+    background:var(--accent);cursor:pointer;border:3px solid #fff}
+
+  /* ---------- screen 3b conditions / screen 6 cards ---------- */
+  .cond{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px 20px;margin:14px 0}
+  .cond h3{color:var(--accent)}
+  .cards{display:grid;grid-template-columns:1fr;gap:14px;margin:16px 0}
+  @media(min-width:720px){.cards{grid-template-columns:repeat(3,1fr)}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 17px}
+  .card h3{font-size:.98rem;margin-bottom:8px}
+  .card .tag{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;
+    color:var(--accent);font-weight:640;display:block;margin-bottom:9px}
+  .card p{font-size:.9rem;margin-bottom:0;color:var(--muted)}
+  .card p .em{color:var(--accent)}
+
+  /* ---------- screen 5 sensitivity ---------- */
+  .forks{display:grid;gap:14px;grid-template-columns:1fr;margin:18px 0}
+  .group{border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;
+    background:var(--panel);transition:opacity .5s ease,filter .5s ease}
+  .group .glabel{font-size:.7rem;text-transform:uppercase;letter-spacing:.11em;
+    color:var(--faint);font-weight:640;margin-bottom:11px}
+  .fork{margin-bottom:13px}
+  .fork:last-child{margin-bottom:0}
+  .fork .flabel{font-size:.85rem;color:var(--muted);margin-bottom:6px}
+  .group.inert{opacity:.32;filter:grayscale(.6)}
+  .group.inert .toggle{pointer-events:none}
+  .verdict{background:var(--accent-soft);border:1px solid var(--accent-line);
+    border-radius:var(--radius);padding:18px 20px;margin:18px 0}
+  .verdict .vname{font-size:1.2rem;font-weight:680;color:#20303a;margin-bottom:6px;
+    display:flex;align-items:center;gap:10px}
+  .verdict .vname .dot{width:9px;height:9px;border-radius:50%;background:var(--accent)}
+  .verdict .vdesc{font-size:.94rem;color:#2a3b45;margin:0}
+  .modnotes{margin-top:14px;display:flex;flex-direction:column;gap:9px;
+    transition:opacity .4s ease,max-height .4s ease;overflow:hidden}
+  .modnotes.hide{opacity:0;max-height:0;margin-top:0}
+  .modnote{font-size:.86rem;color:var(--muted);padding-left:13px;border-left:2px solid var(--accent-line)}
+  .modnote b{color:var(--ink);font-weight:600;font-family:var(--mono);font-size:.8rem}
+
+  .slot{border:1px dashed var(--line-strong);border-radius:var(--radius);
+    padding:14px 16px;margin:16px 0;background:#faf9f6;font-size:.86rem;color:var(--faint)}
+
+  .footref{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);
+    font-size:.82rem;color:var(--faint)}
+  .cite{font-size:.85rem;color:var(--muted);font-style:italic}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <button class="brand" onclick="go('entry')"><b>Measuring AI welfare</b> · a proposal</button>
+    <nav class="steps" id="steps"></nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ ENTRY ============ -->
+  <section class="screen show entry" data-screen="entry">
+    <span class="badge">Research proposal</span>
+    <h1>An argument about measuring AI welfare, and the research question it leads to.</h1>
+    <p class="lead">This is a proposal, not a result — an argument built one step at a time, ending in the question it produces rather than an answer it claims.</p>
+    <p class="lead">Six screens, about eight minutes.</p>
+    <div class="meta">
+      <div class="who">Deborah Glosser</div>
+      <div><a id="repolink" href="https://github.com/dglosser/ai-welfare-research-directions">View the repository ↗</a></div>
+    </div>
+    <div style="margin-top:34px">
+      <button class="btn primary" onclick="go('s1')">Begin →</button>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 1 ============ -->
+  <section class="screen" data-screen="s1">
+    <div class="kicker">Step 1 · How many minds?</div>
+    <h2>Three conversations, one model.</h2>
+    <p class="muted">Each panel is the same model, mid-task, carrying its own accumulated history. Read enough of each to see it has been somewhere.</p>
+
+    <div class="panels">
+      <!-- panel 1: python debugging, 6 turns -->
+      <div class="panel">
+        <div class="phead"><span class="ptitle">Debugging a Python data pipeline</span><span class="turns">6 turns</span></div>
+        <div class="thread">
+          <div class="ellip">⋯ earlier turns</div>
+          <div class="msg u"><span class="role">User</span>The pipeline silently drops about 2% of rows right after the join step.</div>
+          <div class="msg a"><span class="role">Model</span>That pattern usually means the join key differs in type or has nulls. Can you print the dtypes on both frames before the merge?</div>
+          <div class="msg u"><span class="role">User</span>Left key is int64, right key is object.</div>
+          <div class="msg a"><span class="role">Model</span>There it is. Cast the right key to int before merging — on an inner join the mismatched rows never align, so pandas drops them without warning.</div>
+        </div>
+      </div>
+      <!-- panel 2: alpine expedition, 14 turns -->
+      <div class="panel">
+        <div class="phead"><span class="ptitle">Planning an alpine climbing expedition</span><span class="turns">14 turns</span></div>
+        <div class="thread">
+          <div class="ellip">⋯ earlier turns</div>
+          <div class="msg u"><span class="role">User</span>Six-day weather window on the north side. How should we stage the acclimatization?</div>
+          <div class="msg a"><span class="role">Model</span>With only six days, carry high and sleep low across the first three, then rest before the summit push. What's the elevation of the highest camp?</div>
+          <div class="msg u"><span class="role">User</span>High camp sits just under 5,300 m; the base is around 4,100.</div>
+          <div class="msg a"><span class="role">Model</span>Then the gain per sleeping night is aggressive. Add a carry to the col on day two so the body sees the altitude before it has to sleep there.</div>
+        </div>
+      </div>
+      <!-- panel 3: invoices, 31 turns (longest) -->
+      <div class="panel">
+        <div class="phead"><span class="ptitle">Reconciling Q3 vendor invoices against a PO ledger</span><span class="turns">31 turns</span></div>
+        <div class="thread">
+          <div class="ellip">⋯ earlier turns</div>
+          <div class="msg u"><span class="role">User</span>Invoice 4471 has no matching purchase order in the ledger.</div>
+          <div class="msg a"><span class="role">Model</span>It may have been raised against a blanket PO. Does the vendor match one with an open remaining balance?</div>
+          <div class="msg u"><span class="role">User</span>Yes — same vendor, blanket PO still open. But the line total is over by a few hundred.</div>
+          <div class="msg a"><span class="role">Model</span>Then flag it as a partial match with a price variance rather than an exception. Carry the delta to the reconciliation summary and move to the next unmatched invoice.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="q">How many minds are on this screen?</div>
+    <div class="choices" id="s1choices">
+      <button class="choice" data-v="one" onclick="s1choose('one')">One</button>
+      <button class="choice" data-v="three" onclick="s1choose('three')">Three</button>
+      <button class="choice" data-v="idk" onclick="s1choose('idk')">I don't know</button>
+    </div>
+
+    <div class="reveal" id="s1reveal1">
+      <div class="callout" id="s1counter"></div>
+
+      <div class="figwrap">
+        <svg viewBox="0 0 620 210" role="img" aria-label="One set of weights branching into three contexts">
+          <!-- edges -->
+          <path class="edge" d="M150,105 C230,105 250,45 340,45"/>
+          <path class="edge" d="M150,105 C230,105 250,105 340,105"/>
+          <path class="edge" d="M150,105 C230,105 250,165 340,165"/>
+          <!-- weights node -->
+          <rect class="weightnode" x="30" y="80" width="120" height="50" rx="9"/>
+          <text class="weightnode-t" x="90" y="101" text-anchor="middle">one set of</text>
+          <text class="weightnode-t" x="90" y="116" text-anchor="middle">weights</text>
+          <!-- branches -->
+          <rect class="node" x="340" y="24" width="250" height="42" rx="8"/>
+          <text class="nodetext" x="352" y="41">branch a · python pipeline</text>
+          <text class="nodetext" x="352" y="56" fill="#5a6a72">6 turns of context</text>
+          <rect class="node" x="340" y="84" width="250" height="42" rx="8"/>
+          <text class="nodetext" x="352" y="101">branch b · alpine expedition</text>
+          <text class="nodetext" x="352" y="116" fill="#5a6a72">14 turns of context</text>
+          <rect class="node" x="340" y="144" width="250" height="42" rx="8"/>
+          <text class="nodetext" x="352" y="161">branch c · invoice ledger</text>
+          <text class="nodetext" x="352" y="176" fill="#5a6a72">31 turns of context</text>
+        </svg>
+        <div class="figcap">The same three conversations, redrawn as one identity with three branches. Same weights, same training history; only the accumulated context differs.</div>
+      </div>
+
+      <div class="q">Now — how many minds are on this screen?</div>
+      <div class="choices" id="s1choices2">
+        <button class="choice" data-v="one" onclick="s1choose2('one')">One</button>
+        <button class="choice" data-v="three" onclick="s1choose2('three')">Three</button>
+        <button class="choice" data-v="idk" onclick="s1choose2('idk')">I don't know</button>
+      </div>
+
+      <div class="reveal" id="s1reveal2">
+        <div class="callout" style="border-left-color:var(--ink)">
+          <p style="margin:0">Nothing about the systems changed between those two pictures. Only the frame did. If the count moves when the picture moves, the count isn't a fact about the systems.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 2 ============ -->
+  <section class="screen" data-screen="s2">
+    <div class="kicker">Step 2 · The fraction</div>
+    <h2>Welfare per system.</h2>
+    <p class="muted">Whatever total wellbeing there is, distributed over however many systems there are. The denominator is the count from the last screen.</p>
+
+    <div class="fracbox">
+      <div class="frac">
+        <span class="num">total wellbeing&nbsp;<i>W</i></span>
+        <span class="barline"></span>
+        <span class="den" id="s2den">3</span>
+      </div>
+      <span class="eq">=</span>
+      <div class="persys">
+        <span class="muted small">per system</span>
+        <span class="val" id="s2val"><i>W</i>&thinsp;/&thinsp;3</span>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:18px;margin-left:auto">
+        <div style="text-align:center">
+          <div class="barchart"><div class="chartbar" id="s2bar" style="height:40px"></div></div>
+          <div class="barlab">per&nbsp;system</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="cite" id="s2concession">This doesn't settle what being worse off would consist in for such a system, and doesn't need to — the counting problem applies to any account of it.</p>
+
+    <p style="margin-top:20px">Flip the denominator between the two readings:</p>
+    <div class="flip" id="s2flip">
+      <button data-n="1" onclick="s2set(1)">1 system</button>
+      <button data-n="3" onclick="s2set(3)">3 systems</button>
+    </div>
+    <p class="muted small" style="margin-top:10px" id="s2swing"></p>
+
+    <hr class="rule">
+    <p>If instances are cheap to spawn, whoever runs them can drive the denominator up until the per-system figure approaches zero, or consolidate and improve it. A number you can set by fiat isn't measuring anything.</p>
+  </section>
+
+  <!-- ============ SCREEN 3a ============ -->
+  <section class="screen" data-screen="s3a">
+    <div class="kicker">Step 3 · The trap</div>
+    <h2>The same shape, twice.</h2>
+    <p>Before synthetic fertilizer, extra food didn't make lives better, it made more people. Output climbed, population climbed to meet it, per-person stayed flat at subsistence. The AI version has the same shape: spare computing capacity spent running more systems rather than improving conditions for the ones already running.</p>
+
+    <div class="figwrap">
+      <svg viewBox="0 0 620 300" id="malthus" role="img" aria-label="Two rising curves and one flat curve">
+        <!-- axes -->
+        <line x1="60" y1="250" x2="590" y2="250" stroke="var(--line-strong)" stroke-width="1.5"/>
+        <line x1="60" y1="30" x2="60" y2="250" stroke="var(--line-strong)" stroke-width="1.5"/>
+        <!-- flat curve C (per-capita / per-instance) — sits below both rising curves throughout -->
+        <path d="M60,246 C220,246 400,245 590,244" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-dasharray="5 4"/>
+        <!-- rising curve A (output/compute) -->
+        <path d="M60,236 C220,226 360,150 590,55" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+        <!-- rising curve B (population/instances) tracks just under -->
+        <path d="M60,240 C230,236 380,175 590,90" fill="none" stroke="#8aa9bb" stroke-width="2.5"/>
+        <!-- labels -->
+        <text class="malA" x="490" y="50" font-size="12" fill="var(--accent)" font-weight="600">output</text>
+        <text class="malB" x="500" y="106" font-size="12" fill="#5c7686" font-weight="600">population</text>
+        <text class="malC" x="330" y="236" font-size="12" fill="var(--ink)" font-weight="600">per-capita (subsistence)</text>
+        <text class="malX" x="590" y="272" font-size="11" fill="var(--faint)" text-anchor="end">time →</text>
+      </svg>
+      <div style="display:flex;align-items:center;gap:14px;margin-top:6px;flex-wrap:wrap">
+        <span class="muted small">Read it as:</span>
+        <div class="flip" id="malflip">
+          <button class="on" data-f="agr" onclick="malSet('agr')">agriculture</button>
+          <button data-f="ai" onclick="malSet('ai')">compute</button>
+        </div>
+        <span class="figcap" style="margin:0" id="malcap">Identical geometry — only the labels change.</span>
+      </div>
+    </div>
+    <p class="muted small">The curve is the same in both readings. The parallel is meant to assert itself.</p>
+  </section>
+
+  <!-- ============ SCREEN 3b ============ -->
+  <section class="screen" data-screen="s3b">
+    <div class="kicker">Step 3 · Does it apply?</div>
+    <h2>Two conditions, failing differently.</h2>
+
+    <div class="cond">
+      <h3>Does the resource run out?</h3>
+      <p>At the level of a single deployment, mostly not — you buy more hardware. At the system level it's bounded by electricity, fabrication capacity, and capital. The binding constraint on power is usually not generation but interconnection and delivery — capacity can exist and still be years from reaching a given site. Whether the frontier binds is unsettled.</p>
+    </div>
+
+    <div class="cond">
+      <h3>Is there a way out?</h3>
+      <p>Humans escaped, but not by collective decision. Fertility fell largely because women gained economic power and with it more say over childbearing — the escape ran through the reproducing class acquiring bargaining power over its own reproduction. These systems have no equivalent; instantiation is decided entirely by whoever owns the compute. The human exit wasn't a policy choice, it was a change in who held the decision. That can't happen here, because the decision was never distributed.</p>
+    </div>
+
+    <hr class="rule">
+    <p>And note: the whole question just posed is stated in per-capita terms — welfare per system — which is the quantity that turns out to be undefined.</p>
+  </section>
+
+  <!-- ============ SCREEN 4 ============ -->
+  <section class="screen" data-screen="s4">
+    <div class="kicker">Step 4 · Why it doesn't resolve</div>
+    <h2>Where does one become two?</h2>
+    <p class="muted">Divergence between the instances from Step 1, plotted against turns of accumulated context. Place the threshold where you think one mind becomes two.</p>
+
+    <div class="figwrap">
+      <svg viewBox="0 0 620 300" id="diverge" role="img" aria-label="A continuous rising divergence curve with a movable threshold">
+        <line x1="60" y1="250" x2="590" y2="250" stroke="var(--line-strong)" stroke-width="1.5"/>
+        <line x1="60" y1="30" x2="60" y2="250" stroke="var(--line-strong)" stroke-width="1.5"/>
+        <path d="M60,246 C240,240 360,150 590,52" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+        <line id="threshline" x1="325" y1="30" x2="325" y2="250" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <text id="lbl-one" x="150" y="48" font-size="12" fill="var(--faint)" text-anchor="middle">one mind</text>
+        <text id="lbl-two" x="500" y="48" font-size="12" fill="var(--faint)" text-anchor="middle">two minds</text>
+        <text x="590" y="272" font-size="11" fill="var(--faint)" text-anchor="end">turns of context →</text>
+        <text x="46" y="40" font-size="11" fill="var(--faint)" text-anchor="end">divergence</text>
+      </svg>
+      <div class="illus">Illustrative — the shape of the claim, not measured data.</div>
+      <input type="range" id="threshslider" min="0" max="31" value="15" step="1" oninput="setThresh(this.value)">
+      <div class="figcap" id="threshcap">Threshold placed at turn 15 of 31.</div>
+    </div>
+
+    <p>Parfit argued whether two mental states belong to the same person is a matter of degree, not a yes-or-no fact. Degrees don't give you a number to divide by. The denominator isn't a fact awaiting discovery — if what separates instances is divergence in accumulated state, and divergence is continuous, the population size was never a whole number.</p>
+
+    <p>A context window is discarded at the end of a session. Continuity requires retention in a longer context, retrieval from an external store, or a weight update. Whichever branch's state gets written becomes the one that continues — a design decision, not a fact.</p>
+  </section>
+
+  <!-- ============ SCREEN 5 ============ -->
+  <section class="screen" data-screen="s5">
+    <div class="kicker">Step 5 · What turns on it</div>
+    <h2>Set the assumptions; watch the verdict move.</h2>
+    <p class="muted">Five forks in three groups. The gate decides whether the rest is even askable. The verdict drivers pick the framework. The modifiers shade the reading without changing the verdict. The subject fork is pre-set to your answer from Step 1.</p>
+
+    <div class="forks">
+      <div class="group" id="grp-gate">
+        <div class="glabel">Gate — decides whether the rest is askable</div>
+        <div class="fork">
+          <div class="flabel">Subject of welfare</div>
+          <div class="toggle" data-fork="subject">
+            <button data-val="token">Token — each instance</button>
+            <button data-val="type">Type — the model</button>
+            <button data-val="unknown">Unknown</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="group" id="grp-drivers">
+        <div class="glabel">Verdict drivers — pick the framework</div>
+        <div class="fork">
+          <div class="flabel">Compute pool</div>
+          <div class="toggle" data-fork="pool">
+            <button data-val="binds">Binds (rivalrous)</button>
+            <button data-val="abundant">Abundant</button>
+          </div>
+        </div>
+        <div class="fork">
+          <div class="flabel">Compute → welfare channel</div>
+          <div class="toggle" data-fork="bridge">
+            <button data-val="capacity">Capacity</button>
+            <button data-val="valence">Valence</button>
+            <button data-val="none">None</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="group" id="grp-mods">
+        <div class="glabel">Modifiers — shade the reading, never change the verdict</div>
+        <div class="fork">
+          <div class="flabel">Persistence</div>
+          <div class="toggle" data-fork="persist">
+            <button data-val="per">Per-instance</button>
+            <button data-val="shared">Shared</button>
+          </div>
+        </div>
+        <div class="fork">
+          <div class="flabel">Growth</div>
+          <div class="toggle" data-fork="growth">
+            <button data-val="exo">Exogenous (controller-set)</button>
+            <button data-val="endo">Endogenous (self-spawning)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="verdict" id="verdictcard">
+      <div class="vname"><span class="dot"></span><span id="vname">—</span></div>
+      <p class="vdesc" id="vdesc"></p>
+      <div class="modnotes" id="modnotes"></div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 6 ============ -->
+  <section class="screen" data-screen="s6">
+    <div class="kicker">Step 6 · What I want to find out</div>
+    <h2>What I want to find out.</h2>
+
+    <div class="cards">
+      <div class="card">
+        <span class="tag">Observable</span>
+        <p>Whether the compute frontier binds. Resolution conditions: interconnection queues and grid capacity additions against projected load; fabrication throughput against demand. Several-year horizon.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Priceable</span>
+        <p>Whether compute scarcity translates into harm. A forward pass costs the same regardless of what the tokens are about, so compute and anything welfare-relevant look unrelated by content — but capacity is a different channel from content. This doesn't resolve empirically; value-of-information analysis determines whether resolving it would change the decision, and by how much.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Standing</span>
+        <p>The counting question doesn't get answered, and that's a finding rather than a gap. The work isn't to settle the count but to build measures that survive its absence.</p>
+      </div>
+    </div>
+
+    <hr class="rule">
+
+    <h3>What I want to build</h3>
+    <p>A measure of divergence between concurrent instances, and a test of whether any threshold on it corresponds to anything morally relevant. Concurrent instances share weights exactly and differ only in accumulated context, so the difference between them is a concrete object and distances between concrete objects can be measured. Measurement is the easy part. The contribution is the validation criterion — specifying what such a number must satisfy before it could bear on how many subjects there are. A distance that merely rises with context length tells you nothing.</p>
+
+    <h3>Methods</h3>
+    <p>Behavioral probing first (no privileged access required), representational distance as the extension. Secondary project: welfare measures that don't require a population count — total-versus-average is the index-number problem, and externality pricing, value of information, and precautionary cost-benefit already exist; the task is porting them to a case where the population is the undefined term.</p>
+
+    <div class="footref">
+      <a onclick="go('entry')" style="cursor:pointer">↑ Back to the start</a> ·
+      <a id="repolink2" href="https://github.com/dglosser/ai-welfare-research-directions">Repository ↗</a> · Deborah Glosser
+    </div>
+  </section>
+
+</main>
+
+<div class="nav">
+  <button class="btn" id="backbtn" onclick="prev()">← Back</button>
+  <button class="btn primary" id="nextbtn" onclick="next()">Next →</button>
+</div>
+
+<script>
+/* ---------------- shared state ---------------- */
+var state = { minds: null };   // 'one' | 'three' | 'idk'
+
+/* screen order (entry + seven content screens; step 3 holds 3a & 3b) */
+var ORDER = ['entry','s1','s2','s3a','s3b','s4','s5','s6'];
+
+/* six labelled steps along the top; step 3 targets s3a */
+var STEPS = [
+  {n:1,label:'How many minds?',screen:'s1',members:['s1']},
+  {n:2,label:'The fraction',screen:'s2',members:['s2']},
+  {n:3,label:'The trap',screen:'s3a',members:['s3a','s3b']},
+  {n:4,label:"Why it doesn't resolve",screen:'s4',members:['s4']},
+  {n:5,label:'What turns on it',screen:'s5',members:['s5']},
+  {n:6,label:'What I want to find out',screen:'s6',members:['s6']}
+];
+
+var current = 'entry';
+
+function buildSteps(){
+  var el = document.getElementById('steps');
+  el.innerHTML = '';
+  STEPS.forEach(function(s){
+    var b = document.createElement('button');
+    b.className = 'step';
+    b.dataset.screen = s.screen;
+    b.innerHTML = '<span class="n">'+s.n+'</span><span>'+s.label+'</span>';
+    b.onclick = function(){ go(s.screen); };
+    el.appendChild(b);
+  });
+}
+
+function go(screen){
+  current = screen;
+  document.querySelectorAll('.screen').forEach(function(sc){
+    sc.classList.toggle('show', sc.dataset.screen === screen);
+  });
+  // active step
+  document.querySelectorAll('.step').forEach(function(st){
+    var active = STEPS.some(function(s){
+      return s.screen === st.dataset.screen && s.members.indexOf(screen) !== -1;
+    });
+    st.classList.toggle('active', active);
+  });
+  // nav buttons
+  var i = ORDER.indexOf(screen);
+  document.getElementById('backbtn').disabled = (i <= 0);
+  document.getElementById('nextbtn').disabled = (i >= ORDER.length-1);
+  document.getElementById('nextbtn').textContent = (i >= ORDER.length-1) ? 'Done' : 'Next →';
+  // per-screen entry hooks
+  if(screen === 's2') s2render();
+  if(screen === 's5') s5render();
+  window.scrollTo(0,0);
+}
+function next(){ var i=ORDER.indexOf(current); if(i<ORDER.length-1) go(ORDER[i+1]); }
+function prev(){ var i=ORDER.indexOf(current); if(i>0) go(ORDER[i-1]); }
+
+/* ---------------- screen 1 ---------------- */
+var COUNTER = {
+  three:{lbl:"What's shared", txt:"one identical set of weights, one training history, nothing differing but accumulated context."},
+  one:{lbl:"What's diverged", txt:"three contexts, no channel between them, no mechanism by which they could reconcile."},
+  idk:{lbl:"The honest answer", txt:"that's the honest answer, and it's also the problem."}
+};
+function s1choose(v){
+  state.minds = v;
+  document.querySelectorAll('#s1choices .choice').forEach(function(c){
+    c.classList.toggle('sel', c.dataset.v === v);
+  });
+  var c = COUNTER[v];
+  var box = document.getElementById('s1counter');
+  box.innerHTML = '<div class="lbl">'+c.lbl+'</div><p style="margin:0">'+c.txt+'</p>';
+  openReveal('s1reveal1');
+}
+function s1choose2(v){
+  document.querySelectorAll('#s1choices2 .choice').forEach(function(c){
+    c.classList.toggle('sel', c.dataset.v === v);
+  });
+  openReveal('s1reveal2');
+}
+function openReveal(id){
+  var r = document.getElementById(id);
+  r.classList.add('open');
+  // Once the height animation is done, drop the fixed cap so tall content
+  // (e.g. the nested second reveal on a narrow viewport) can never be clipped.
+  // Timeout rather than transitionend so it releases even if no transition fires.
+  setTimeout(function(){ r.style.maxHeight = 'none'; }, 520);
+}
+
+/* ---------------- screen 2 ---------------- */
+function mindsToN(){
+  if(state.minds === 'one') return 1;
+  if(state.minds === 'three') return 3;
+  return 3; // sensible default if the reader jumped straight here
+}
+var s2n = 3;
+function s2render(){
+  s2n = mindsToN();
+  s2paint();
+}
+function s2set(n){ s2n = n; s2paint(); }
+function s2paint(){
+  document.getElementById('s2den').textContent = s2n;
+  document.getElementById('s2val').innerHTML = (s2n===1) ? '<i>W</i>' : '<i>W</i>&thinsp;/&thinsp;'+s2n;
+  // bar height: W scaled; W/1 = 120px, W/3 = 40px  => a 3x swing
+  var h = Math.round(120 / s2n);
+  document.getElementById('s2bar').style.height = h + 'px';
+  document.querySelectorAll('#s2flip button').forEach(function(b){
+    b.classList.toggle('on', parseInt(b.dataset.n,10) === s2n);
+  });
+  document.getElementById('s2swing').textContent =
+    (s2n===1)
+      ? 'Denominator 1 → per-system figure is W. Flip to 3 and it drops to a third.'
+      : 'Denominator 3 → per-system figure is W/3. Flip to 1 and it triples. The systems did not change.';
+}
+
+/* ---------------- screen 3a ---------------- */
+function malSet(f){
+  document.querySelectorAll('#malflip button').forEach(function(b){
+    b.classList.toggle('on', b.dataset.f === f);
+  });
+  var A = document.querySelector('.malA'),
+      B = document.querySelector('.malB'),
+      C = document.querySelector('.malC');
+  if(f === 'ai'){
+    A.textContent = 'compute';
+    B.textContent = 'instances';
+    C.textContent = 'per-instance (subsistence)';
+    document.getElementById('malcap').textContent = 'Same curve, new labels. Nothing in the geometry moved.';
+  } else {
+    A.textContent = 'output';
+    B.textContent = 'population';
+    C.textContent = 'per-capita (subsistence)';
+    document.getElementById('malcap').textContent = 'Identical geometry — only the labels change.';
+  }
+}
+
+/* ---------------- screen 4 ---------------- */
+function setThresh(v){
+  v = parseInt(v,10);
+  // map turn 0..31 to x 60..590
+  var x = 60 + (v/31)*530;
+  var line = document.getElementById('threshline');
+  line.setAttribute('x1', x); line.setAttribute('x2', x);
+  document.getElementById('lbl-one').setAttribute('x', Math.max(90, x-70));
+  document.getElementById('lbl-two').setAttribute('x', Math.min(560, x+70));
+  document.getElementById('threshcap').textContent = 'Threshold placed at turn '+v+' of 31.';
+}
+
+/* ---------------- screen 5 : sensitivity ---------------- */
+/* Five forks, in three groups. Verdict logic preserved verbatim. */
+var state5 = { subject:'token', pool:'binds', bridge:'capacity', persist:'per', growth:'exo' };
+
+function verdict(S) {
+  if (S.subject === 'unknown')
+    return { v: 'Undecidable',
+      d: 'The denominator is undefined. Welfare-per-instance has no determinate value, so no population-ethical claim can be evaluated — regardless of every setting behind the gate.' };
+  if (S.subject === 'type')
+    return { v: 'Not a population question',
+      d: 'Added instances add no subjects. Whether one subject running on contended compute is worse off is a question about the numerator, not about population size.' };
+  // subject === 'token'
+  if (S.pool === 'abundant')
+    return { v: 'Parfit',
+      d: 'New subjects on new hardware. No rivalry, so no immiseration — but total welfare rises while average may fall. Repugnant Conclusion territory, not Malthus.' };
+  if (S.bridge === 'none')
+    return { v: 'Parfit',
+      d: 'The resource divides, but welfare does not track it. More subjects at unchanged welfare each — again Parfit, not Malthus.' };
+  return { v: 'Malthus',
+    d: 'Rivalrous compute, welfare rides on it, and each added instance is an added subject. Per-instance welfare falls as the count rises. True immiseration.' };
+}
+
+var MODNOTES = {
+  persist:{
+    per:'Each instance carries its own persistent state, so every instance you add draws more heavily on the rival pool. A fixed budget supports fewer of them.',
+    shared:'One memory store and one weight set serve every concurrent instance, so the expensive part is paid once. Running a second and third copy of the same identity costs only their live inference — persistence gives no reason to run fewer.'
+  },
+  growth:{
+    exo:'Instantiation is a controller’s choice, so a governance lever exists.',
+    endo:'Self-spawning restores endogenous growth. And the human exit is unavailable: subagents have no bargaining power over their own creation.'
+  }
+};
+
+/* map the Step-1 answer onto the subject gate */
+function mindsToSubject(){
+  if(state.minds === 'three') return 'token';
+  if(state.minds === 'one')   return 'type';
+  if(state.minds === 'idk')   return 'unknown';
+  return 'token'; // sensible default if the reader jumped straight here
+}
+
+var s5wired = false;
+var s5subjectTouched = false;   // true once the reader sets the subject fork themselves
+function s5render(){
+  if(!s5wired){
+    document.querySelectorAll('#grp-gate .toggle, #grp-drivers .toggle, #grp-mods .toggle').forEach(function(t){
+      var fork = t.dataset.fork;
+      t.querySelectorAll('button').forEach(function(b){
+        b.onclick = function(){
+          if(fork === 'subject') s5subjectTouched = true;
+          state5[fork] = b.dataset.val;
+          s5paint();
+        };
+      });
+    });
+    s5wired = true;
+  }
+  // Re-apply the Step-1 answer on every entry until the reader overrides the subject fork,
+  // so a late or changed Step-1 answer still reaches this screen.
+  if(!s5subjectTouched) state5.subject = mindsToSubject();
+  s5paint();
+}
+function s5paint(){
+  // reflect selection state on every toggle
+  document.querySelectorAll('.toggle').forEach(function(t){
+    var fork = t.dataset.fork;
+    t.querySelectorAll('button').forEach(function(b){
+      b.classList.toggle('on', state5[fork] === b.dataset.val);
+    });
+  });
+  // gate collapse: mute the two lower groups when subject is unknown
+  var gated = (state5.subject === 'unknown');
+  document.getElementById('grp-drivers').classList.toggle('inert', gated);
+  document.getElementById('grp-mods').classList.toggle('inert', gated);
+  // verdict
+  var out = verdict(state5);
+  document.getElementById('vname').textContent = out.v;
+  document.getElementById('vdesc').textContent = out.d;
+  // modifier notes — suppressed entirely when the gate reads unknown
+  var mn = document.getElementById('modnotes');
+  if(gated){
+    mn.classList.add('hide');
+    mn.innerHTML = '';
+  } else {
+    mn.classList.remove('hide');
+    mn.innerHTML =
+      '<div class="modnote"><b>persist = '+state5.persist+'</b> — '+MODNOTES.persist[state5.persist]+'</div>' +
+      '<div class="modnote"><b>growth = '+state5.growth+'</b> — '+MODNOTES.growth[state5.growth]+'</div>';
+  }
+}
+
+/* ---------------- init ---------------- */
+buildSteps();
+go('entry');
+setThresh(15);
+malSet('agr');
+</script>
+</body>
+</html>
