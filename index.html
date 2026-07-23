@@ -183,6 +183,24 @@
   .weightnode-t{font-size:11px;fill:#fff;font-family:var(--sans);font-weight:600}
   .edge{stroke:var(--line-strong);stroke-width:1.5;fill:none}
 
+  /* Screen 1 branch figure — emphasis by opacity only; geometry never changes.
+     Only the weights node and the three context labels are ever touched;
+     branch rects, branch titles, and edges stay at full strength in every state. */
+  #branchfig .weightnode,
+  #branchfig .weightnode-t,
+  #branchfig .ctx{transition:opacity .35s ease}
+  #branchfig.emph-shared .ctx{opacity:.3}                 /* chose "three" → emphasize the shared weights */
+  #branchfig.emph-diverged .weightnode,
+  #branchfig.emph-diverged .weightnode-t{opacity:.3}      /* chose "one" → emphasize the diverged contexts */
+  #branchfig.emph-both .weightnode,
+  #branchfig.emph-both .weightnode-t,
+  #branchfig.emph-both .ctx{opacity:.6}                   /* "I don't know" → both muted, neither resolves */
+  @media (prefers-reduced-motion:reduce){
+    #branchfig .weightnode,
+    #branchfig .weightnode-t,
+    #branchfig .ctx{transition:none}
+  }
+
   /* ---------- fraction (screen 2) ---------- */
   .fracbox{display:flex;flex-wrap:wrap;align-items:center;gap:26px;
     background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
@@ -346,7 +364,7 @@
       <div class="callout" id="s1counter"></div>
 
       <div class="figwrap">
-        <svg viewBox="0 0 620 210" role="img" aria-label="One set of weights branching into three contexts">
+        <svg id="branchfig" viewBox="0 0 620 210" role="img" aria-label="One set of weights branching into three contexts">
           <!-- edges -->
           <path class="edge" d="M150,105 C230,105 250,45 340,45"/>
           <path class="edge" d="M150,105 C230,105 250,105 340,105"/>
@@ -358,13 +376,13 @@
           <!-- branches -->
           <rect class="node" x="340" y="24" width="250" height="42" rx="8"/>
           <text class="nodetext" x="352" y="41">branch a · python pipeline</text>
-          <text class="nodetext" x="352" y="56" fill="#5a6a72">6 turns of context</text>
+          <text class="nodetext ctx" x="352" y="56" fill="#5a6a72">6 turns of context</text>
           <rect class="node" x="340" y="84" width="250" height="42" rx="8"/>
           <text class="nodetext" x="352" y="101">branch b · alpine expedition</text>
-          <text class="nodetext" x="352" y="116" fill="#5a6a72">14 turns of context</text>
+          <text class="nodetext ctx" x="352" y="116" fill="#5a6a72">14 turns of context</text>
           <rect class="node" x="340" y="144" width="250" height="42" rx="8"/>
           <text class="nodetext" x="352" y="161">branch c · invoice ledger</text>
-          <text class="nodetext" x="352" y="176" fill="#5a6a72">31 turns of context</text>
+          <text class="nodetext ctx" x="352" y="176" fill="#5a6a72">31 turns of context</text>
         </svg>
         <div class="figcap">The same three conversations, redrawn as one identity with three branches. Same weights, same training history; only the accumulated context differs.</div>
       </div>
@@ -673,6 +691,14 @@ var COUNTER = {
 };
 function s1choose(v){
   state.minds = v;
+  // Shift emphasis in the branch figure to match the counter-case — by opacity only,
+  // never geometry. Swap the single class cleanly so repeated answers don't stack.
+  var fig = document.getElementById('branchfig');
+  if(fig){
+    fig.classList.remove('emph-shared','emph-diverged','emph-both');
+    var ecls = v==='three' ? 'emph-shared' : v==='one' ? 'emph-diverged' : v==='idk' ? 'emph-both' : null;
+    if(ecls) fig.classList.add(ecls);
+  }
   document.querySelectorAll('#s1choices .choice').forEach(function(c){
     c.classList.toggle('sel', c.dataset.v === v);
   });
