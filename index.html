@@ -299,7 +299,8 @@
   <!-- ============ ENTRY ============ -->
   <section class="screen show entry" data-screen="entry">
     <span class="badge">Research proposal</span>
-    <h1>An argument about measuring AI welfare, and the research question it leads to.</h1>
+    <h1>Per-capita metrics need a denominator. AI doesn't have one.</h1>
+    <p class="lead">An interactive argument that measuring AI welfare, or governing AI systems, runs into a counting problem with no clean answer, and the research directions that follow.</p>
     <p class="lead">This is a proposal, not a result. It builds one step at a time and ends in a question, not an answer.</p>
     <p class="lead">Six screens, about eight minutes.</p>
     <div class="meta">
@@ -675,6 +676,8 @@ function go(screen){
   document.getElementById('backbtn').disabled = (i <= 0);
   document.getElementById('nextbtn').disabled = (i >= ORDER.length-1);
   document.getElementById('nextbtn').textContent = (i >= ORDER.length-1) ? 'Done' : 'Next →';
+  // The opener has its own "Begin" control, so hide the shared bottom nav there.
+  document.querySelector('.nav').style.display = (screen === 'entry') ? 'none' : 'flex';
   // per-screen entry hooks
   if(screen === 's2') s2render();
   if(screen === 's5') s5render();
